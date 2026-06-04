@@ -1,0 +1,25 @@
+
+data/
+
+#Ambiente virtual
+venv/
+env/
+.venv/
+
+#Cache do Python
+__pycache__/
+*.pyc
+*.pyo
+
+#Arquivos de sistema
+.DS_Store
+Thumbs.db
+
+#Logs
+*.log
+
+#Arquivos de ambiente
+.env
+
+#VSCode
+.vscode/
