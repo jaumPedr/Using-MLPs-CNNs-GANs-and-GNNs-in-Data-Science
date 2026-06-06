@@ -14,7 +14,7 @@ import numpy as np
 torch.manual_seed(42)
 
 def getData():
-    training_data = datasets.FashionMNIST(
+    train_data = datasets.FashionMNIST(
         root="data",
         train=True,
         download=False,
@@ -28,21 +28,21 @@ def getData():
         transform=ToTensor()
     )
     
-    train_data_size = int( 0.8 * len(training_data.data) )
-    valid_data_size = len(training_data) - train_data_size
+    train_data_size = int( 0.8 * len(train_data.data) )
+    valid_data_size = len(train_data) - train_data_size
 
-    training_data, validation_data = random_split( dataset = training_data, lengths= [train_data_size, valid_data_size])
+    train_data, validation_data = random_split( dataset = train_data, lengths= [train_data_size, valid_data_size])
 
 
     #image size 28x28x1, 10 classes (0 - 9)
-    train_dataloader = DataLoader(training_data, batch_size=64, shuffle=True)
+    train_dataloader = DataLoader(train_data, batch_size=64, shuffle=True)
     valid_dataloader = DataLoader(validation_data, batch_size=64, shuffle=True)
     test_dataloader = DataLoader(test_data, batch_size=64, shuffle=True)
 
     return train_dataloader, valid_dataloader, test_dataloader
 
 class Model(nn.Module):
-    def __init__(self) -> None:
+    def __init__(self):
         super().__init__()
         self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1)
         self.pool1 = nn.MaxPool2d(kernel_size = 2, stride = 2, padding = 0)
@@ -63,8 +63,7 @@ class Model(nn.Module):
         x = self.pool2(x)
 
         x = self.flatten(x)
-        x = F.softmax(self.linear1(x))
-
+        x = self.linear1(x)
 
         return x
 
@@ -106,7 +105,7 @@ model = Model()
 train_loop(train_dataloader, model)
 accuracy, cm, last_X, last_pred = test_loop(test_dataloader, model)
 print(f"Test Accuracy: {accuracy:.4f}")
-print("Confusion Matrix:")#
+print("Confusion Matrix:")
 print(cm)
 
 #plt.figure(figsize=(10, 7))
