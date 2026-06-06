@@ -1,0 +1,223 @@
+import torchvision.datasets as datasets
+import torch
+from torch import nn
+from torch.utils.data import DataLoader, random_split
+from torchvision import datasets
+from torchvision.transforms import ToTensor, transforms
+import torch.nn.functional as F
+from tqdm import tqdm
+from sklearn.metrics import confusion_matrix, accuracy_score
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+import numpy as np
+
+RANDOM_SEED = 42
+BATCH_SIZE = 64
+DATASET_PATH = './data'
+TRAIN_SPLIT  = 0.8
+
+torch.manual_seed(RANDOM_SEED)
+
+def data_Module():
+    
+    tranform = transforms.Compose(
+        [
+            transforms.ToTensor(),
+            transforms.Normalize((0.5,), (0.5,)),  
+        ]
+    )
+
+    train_data = datasets.MNIST(
+        root=DATASET_PATH, 
+        train=True, 
+        transform=tranform, 
+        download=True
+    )
+
+    test_data = datasets.MNIST(
+        root=DATASET_PATH, 
+        train=False, 
+        transform=tranform, 
+        download=True
+    )
+
+    train_data_size = int( TRAIN_SPLIT * len(train_data.data) )
+    valid_data_size = len(train_data) - train_data_size
+
+    train_data, validation_data = random_split( dataset = train_data, lengths= [train_data_size, valid_data_size])
+
+    train_dataloader = DataLoader(train_data, batch_size=64, shuffle=True)
+    valid_dataloader = DataLoader(validation_data, batch_size=64, shuffle=True)
+    test_dataloader = DataLoader(test_data, batch_size=64, shuffle=True)
+
+    return train_dataloader, valid_dataloader, test_dataloader
+
+
+class Generator(nn.Module):
+    def __init__(self, latent_dim = 100):
+        super().__init__()
+
+        self.linear1 = nn.Linear(latent_dim, 128*7*7)
+        self.convTrans1 = nn.ConvTranspose2d(128, 64, kernel_size = 4, stride=2, padding=1)
+        self.convTrans2 = nn.ConvTranspose2d(64, 1, kernel_size = 4, stride=2, padding=1)
+
+    
+    def forward(self, x):
+        
+        x = F.relu(self.linear1(x))
+        x = x.view(-1, 128, 7, 7)
+
+        x = F.relu(self.convTrans1(x))
+
+        x = torch.tanh(self.convTrans2(x))
+
+        return x
+    
+class Discriminator(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.conv1 = nn.Conv2d(1, 16, kernel_size=3, stride=1, padding=1)
+        self.pool1 = nn.MaxPool2d(kernel_size = 2, stride = 2, padding = 0)
+
+        self.conv2 = nn.Conv2d(16, 32, kernel_size=3, stride=1, padding=1)
+        self.pool2 = nn.MaxPool2d(kernel_size = 2, stride = 2, padding = 0)
+
+        self.flatten = nn.Flatten()
+        self.linear1 = nn.Linear(32*7*7, 1)
+
+
+    def forward(self, x):
+        
+        x = F.relu(self.conv1(x))
+        x = self.pool1(x)
+
+        x = F.relu(self.conv2(x))
+        x = self.pool2(x)
+
+        x = self.flatten(x)
+        x = self.linear1(x)
+
+        return x
+
+
+
+def loss_Generator(discriminator, generator, generator_optimizer, batch_size):
+    noise_data = torch.randn(batch_size, 100)
+    target = torch.ones(batch_size, 1)
+    
+    generated_images = generator(noise_data)
+
+    discriminator_pred = discriminator(generated_images)
+
+    loss_fn = nn.BCEWithLogitsLoss()
+    Loss = loss_fn(discriminator_pred, target)
+
+    generator_optimizer.zero_grad()
+    Loss.backward()
+    generator_optimizer.step()
+    return Loss
+
+def loss_Discriminator(discriminator, generator, discriminator_optimizer, image):
+    batch_size = image.size(0)
+
+    real_images_target = torch.ones(batch_size, 1)
+    fake_images_target = torch.zeros(batch_size, 1)
+    
+    noise_data = torch.randn(batch_size, 100)
+    generated_images = generator(noise_data).detach()
+
+    pred_real_images = discriminator(image)
+    pred_fake_images = discriminator(generated_images)
+
+    loss_fn = nn.BCEWithLogitsLoss()
+    loss_real_images = loss_fn(pred_real_images, real_images_target)
+    loss_fake_images = loss_fn(pred_fake_images, fake_images_target)
+
+    Loss = loss_real_images + loss_fake_images
+
+    discriminator_optimizer.zero_grad()
+    Loss.backward()
+    discriminator_optimizer.step()
+    return Loss
+
+def plot_generated_images(generator, num_images=16):
+    generator.eval()
+
+    with torch.no_grad():
+        noise = torch.randn(num_images, 100)
+        fake_images = generator(noise)
+
+    fig, axes = plt.subplots(4, 4, figsize=(8, 8))
+
+    for i, ax in enumerate(axes.flat):
+        image = fake_images[i].squeeze().cpu().numpy()
+        image = image * 0.5 + 0.5
+
+        ax.imshow(image, cmap="gray", vmin=0, vmax=1)
+        ax.axis("off")
+
+    plt.tight_layout()
+    plt.show()
+
+    generator.train()
+
+def train_loop(dataloader, discriminator, generator, epochs = 100):
+    discriminator_optimizer = torch.optim.Adam(discriminator.parameters(), lr=0.0002, betas=(0.5, 0.999))
+    generator_optimizer = torch.optim.Adam(generator.parameters(), lr=0.0002,betas=(0.5, 0.999))
+    middle_epoch = epochs // 2
+    discriminator.train()
+    generator.train()
+
+    for epoch in range(epochs):
+        for batch, (X, y) in enumerate(tqdm(dataloader, desc = f"Epoch {epoch+1}/{epochs}")):
+            
+            loss_disc = loss_Discriminator(discriminator, generator, discriminator_optimizer, X)
+            loss_gen = loss_Generator(discriminator, generator, generator_optimizer, X.size(0))
+        
+        if epoch in [0, middle_epoch, epochs - 1]:
+            plot_generated_images(generator)
+
+
+def test_loop(discriminator, generator):
+    discriminator.eval()
+    generator.eval()
+
+    with torch.no_grad():
+        noise = torch.randn(BATCH_SIZE, 100)
+
+        fake_images = generator(noise)
+        logits = discriminator(fake_images)
+
+        probs = torch.sigmoid(logits)
+        predictions = (probs >= 0.5).float()
+
+        targets = torch.zeros_like(predictions)
+
+        accuracy = ((predictions == targets).float().mean().item())
+        cm = confusion_matrix(targets.cpu().numpy().ravel(),predictions.cpu().numpy().ravel())
+
+    return accuracy, cm, fake_images 
+train_dataloader, valid_dataloader, test_dataloader = data_Module()
+
+gen = Generator()
+dis = Discriminator()
+train_loop(train_dataloader, dis, gen)
+
+accuracy, cm, fake_images = test_loop(dis, gen)
+print(f"Test Accuracy: {accuracy:.4f}")
+print("Confusion Matrix:")
+print(cm)
+
+fig, axes = plt.subplots(4, 4, figsize=(8, 8))
+
+for i, ax in enumerate(axes.flat):
+
+    image = fake_images[i].squeeze().cpu().numpy()
+    image = image * 0.5 + 0.5
+
+    ax.imshow(image, cmap="gray", vmin=0, vmax=1)
+    ax.axis("off")
+
+plt.tight_layout()
+plt.show()
