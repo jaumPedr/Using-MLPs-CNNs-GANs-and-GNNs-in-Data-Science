@@ -6,12 +6,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import ( accuracy_score, precision_score, recall_score, f1_score, confusion_matrix )
 from torch.utils.data import TensorDataset
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 
+RANDOM_SEED = 42
+BATCH_SIZE = 64
+TRAIN_SPLIT  = 0.8
+torch.manual_seed(RANDOM_SEED)
 
-#RANDOM SEED
-torch.manual_seed(42)
-
-def getData():
+def data_Module():
 
     #fetch dataset 
     breast_cancer_wisconsin_diagnostic = fetch_ucirepo(id=17) 
@@ -32,8 +34,8 @@ def getData():
 
 
     #Train, test, and validation data subsets (64% Train, 16% validation, 20% test)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42)
-    X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_size=0.20, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=TRAIN_SPLIT, random_state=RANDOM_SEED)
+    X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, train_size=TRAIN_SPLIT, random_state=RANDOM_SEED)
 
     #Transform subsets in tensors
     X_train = torch.tensor(X_train.values, dtype=torch.float32)
@@ -53,26 +55,26 @@ def getData():
     #Create Dataloaders for train, validation and test Dataset
     train_Batches = DataLoader(
         dataset = train_Dataset,
-        batch_size = 64,
+        batch_size = BATCH_SIZE,
         shuffle = True
     )
 
     valid_Batches = DataLoader(
         dataset = valid_Dataset,
-        batch_size = 64,
+        batch_size = BATCH_SIZE,
         shuffle = True
     )
 
     test_Batches = DataLoader(
         dataset = test_Dataset,
-        batch_size = 64,
+        batch_size = BATCH_SIZE,
         shuffle = True
     )
 
     return train_Batches, valid_Batches, test_Batches
 
 #Model: 30 (imput) -> 16 -> 32 -> 16 -> 1 (output)
-class MLP(nn.Module):
+class Model(nn.Module):
 
     def __init__(self):
         super().__init__()
@@ -86,22 +88,22 @@ class MLP(nn.Module):
         self.fc4 = nn.Linear(16,1)
         
 
-    def forward(self, X):
+    def forward(self, x):
         
-        x = torch.relu(self.fc1(X))
+        x = torch.relu(self.fc1(x))
         x = torch.relu(self.fc2(x))
         x = torch.relu(self.fc3(x))
         x = torch.sigmoid(self.fc4(x))
         return x
 
 
-def train_model(model : MLP, train_Batches : DataLoader, max_epochs = 200):
+def train_model(model : Model, train_Batches : DataLoader, max_epochs = 20):
     model.train()
     loss_Func = nn.BCELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr = 0.001)
 
     for epoch in range(max_epochs):
-        for features , labels in train_Batches:
+        for features , labels in (tqdm(train_Batches)):
             
             labels = labels.unsqueeze(1)
             optimizer.zero_grad()
@@ -115,25 +117,34 @@ def train_model(model : MLP, train_Batches : DataLoader, max_epochs = 200):
     return model
 
 
-def evaluate(model, valid_Data : TensorDataset):
+def evaluate(model, Data : DataLoader):
 
     model.eval()
 
+    y_true = []
+    y_pred = []
+
     with torch.no_grad():
-        logits = model(valid_Data.tensors[0])
-        y_pred = torch.where(logits >= 0.5, 1, 0).numpy().ravel()
-        y_true = valid_Data.tensors[1].numpy()
+        for features, labels in Data:
+            outputs = model(features)
+            preds = (outputs >= 0.5).int().squeeze()
 
-        print("Accuracy  :", accuracy_score(y_true, y_pred))
-        print("Precision :", precision_score(y_true, y_pred))
-        print("Recall    :", recall_score(y_true, y_pred))
-        print("F1-Score :", f1_score(y_true, y_pred))
+            y_pred.extend(preds.numpy())
+            y_true.extend(labels.numpy())
 
-        print("\nConfusion Matrix:")
-        print(confusion_matrix(y_true, y_pred))
+    print("Accuracy  :", accuracy_score(y_true, y_pred))
+    print("Precision :", precision_score(y_true, y_pred))
+    print("Recall    :", recall_score(y_true, y_pred))
+    print("F1-Score  :", f1_score(y_true, y_pred))
 
+    print("\nConfusion Matrix:")
+    print(confusion_matrix(y_true, y_pred))
 
-train_Batches, valid_Dataset, test_Batches = getData()
-model = MLP()
+train_Batches, valid_Batches, test_Batches = data_Module()
+model = Model()
+#train model
 train_model(model,train_Batches)
-evaluate(model, valid_Dataset)
+#Model Evaluation
+evaluate(model, valid_Batches)
+#model final test
+evaluate(model, test_Batches)
