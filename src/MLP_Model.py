@@ -131,20 +131,31 @@ def evaluate(model, Data : DataLoader):
 
             y_pred.extend(preds.numpy())
             y_true.extend(labels.numpy())
-
-    print("Accuracy  :", accuracy_score(y_true, y_pred))
-    print("Precision :", precision_score(y_true, y_pred))
-    print("Recall    :", recall_score(y_true, y_pred))
-    print("F1-Score  :", f1_score(y_true, y_pred))
-
-    print("\nConfusion Matrix:")
-    print(confusion_matrix(y_true, y_pred))
+    
+    return accuracy_score(y_true, y_pred),  precision_score(y_true, y_pred), recall_score(y_true, y_pred), f1_score(y_true, y_pred), confusion_matrix(y_true, y_pred)
 
 train_Batches, valid_Batches, test_Batches = data_Module()
 model = Model()
 #train model
 train_model(model,train_Batches)
+
 #Model Evaluation
-evaluate(model, valid_Batches)
-#model final test
-evaluate(model, test_Batches)
+accuracy,  precision, recall, f1, confusion = evaluate(model, valid_Batches)
+print("Accuracy  :", accuracy)
+print("Precision :", precision)
+print("Recall    :", recall)
+print("F1-Score  :", f1)
+
+print("\nConfusion Matrix:")
+print(confusion)
+
+#model final Evaluation
+accuracy,  precision, recall, f1, confusion = evaluate(model, test_Batches)
+
+print("Accuracy  :", accuracy)
+print("Precision :", precision)
+print("Recall    :", recall)
+print("F1-Score  :", f1)
+
+print("\nConfusion Matrix:")
+print(confusion)
