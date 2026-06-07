@@ -2,13 +2,10 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader, random_split
 from torchvision import datasets
-from torchvision.transforms import ToTensor, transforms
+from torchvision.transforms import transforms
 import torch.nn.functional as F
 from tqdm import tqdm
-from sklearn.metrics import confusion_matrix, accuracy_score
-import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
-import numpy as np
+from sklearn.metrics import confusion_matrix
 
 RANDOM_SEED = 42
 BATCH_SIZE = 64

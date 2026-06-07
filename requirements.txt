@@ -5,3 +5,5 @@ matplotlib
 tqdm 
 torchvision
 torch-geometric
+numpy
+pandas
