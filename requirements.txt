@@ -3,4 +3,5 @@ scikit-learn
 ucimlrepo 
 matplotlib 
 tqdm 
-torchvision 
+torchvision
+torch-geometric
