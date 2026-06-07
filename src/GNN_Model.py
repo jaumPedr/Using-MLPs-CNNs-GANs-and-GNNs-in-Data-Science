@@ -16,15 +16,19 @@ torch.manual_seed(RANDOM_SEED)
 
 def data_Module():
 
+    #Load Cora citation network dataset
     dataset = Planetoid(
         root='./data', 
         name='Cora', 
         transform=T.NormalizeFeatures()
     )
+    #Graph data object
     data = dataset[0] 
 
     return dataset, data
 
+# Graph Convolutional Network (GCN)
+# Input Features (1433) -> GCN Layer 1 -> Dropout -> GCN Layer 2 -> 7 Classes
 class Model(nn.Module):
     def __init__(self):
         super().__init__()
@@ -53,14 +57,17 @@ def train_model(model, data, epochs=EPOCHS):
 
         optimizer.zero_grad()
 
+        # Forward pass over entire graph
         output = model(data.x, data.edge_index)
 
+        #Compute loss using only training nodes
         loss = loss_fn(output[data.train_mask], data.y[data.train_mask])
         loss.backward()
         optimizer.step()
 
     return model
 
+# Model evaluation
 def evaluate(model, data, mask):
 
     model.eval()
@@ -79,12 +86,14 @@ def evaluate(model, data, mask):
 
     return accuracy_score(y_true, y_pred), precision_score(y_true, y_pred, average="macro"), recall_score(y_true, y_pred, average="macro"), f1_score(y_true, y_pred, average="macro"), confusion_matrix(y_true, y_pred)
     
-
+#Load graph dataset
 dataset, data = data_Module()
 
+#create model
 model = Model()
 train_model(model, data)
 
+#Validation evaluation
 accuracy, precision, recall, f1, confusion = evaluate(model, data, data.val_mask)
 print("Validation")
 print("Accuracy :", accuracy)

@@ -41,8 +41,7 @@ def data_Module():
     return train_dataloader
 
 # Generator Network
-# Input Noise (100) -> Linear -> Reshape ->
-# ConvTranspose1 -> ConvTranspose2 -> Generated Image (28x28)
+# Input Noise (100) -> Linear -> Reshape -> ConvTranspose1 -> ConvTranspose2 -> Generated Image (28x28)
 class Generator(nn.Module):
     def __init__(self, latent_dim = 100):
         super().__init__()
@@ -64,8 +63,7 @@ class Generator(nn.Module):
         return x
 
 # Discriminator Network
-# Input Image -> Conv1 -> Pool1 ->
-# Conv2 -> Pool2 -> Flatten -> Linear -> Real/Fake Score
+# Input Image -> Conv1 -> Pool1 -> Conv2 -> Pool2 -> Flatten -> Linear -> Real/Fake Score
 class Discriminator(nn.Module):
     def __init__(self):
         super().__init__()
