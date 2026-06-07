@@ -10,6 +10,7 @@ from tqdm import tqdm
 
 RANDOM_SEED = 42
 BATCH_SIZE = 64
+EPOCHS = 20
 TRAIN_SPLIT  = 0.8
 torch.manual_seed(RANDOM_SEED)
 
@@ -97,7 +98,7 @@ class Model(nn.Module):
         return x
 
 
-def train_model(model : Model, train_Batches : DataLoader, max_epochs = 20):
+def train_model(model : Model, train_Batches : DataLoader, max_epochs = EPOCHS):
     model.train()
     loss_Func = nn.BCELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr = 0.001)

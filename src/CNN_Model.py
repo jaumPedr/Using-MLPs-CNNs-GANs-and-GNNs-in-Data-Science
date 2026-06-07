@@ -12,7 +12,9 @@ import numpy as np
 
 RANDOM_SEED = 42
 BATCH_SIZE = 64
+EPOCHS = 20
 TRAIN_SPLIT  = 0.8
+
 torch.manual_seed(RANDOM_SEED)
 
 def getData():
@@ -90,7 +92,7 @@ class Model(nn.Module):
 
         return x
 
-def train_loop(dataloader, model, epochs = 20):
+def train_loop(dataloader, model, epochs = EPOCHS):
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     model.train()
 
