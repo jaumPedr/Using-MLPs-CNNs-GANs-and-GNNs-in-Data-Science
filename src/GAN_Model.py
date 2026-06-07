@@ -1,20 +1,19 @@
 import torchvision.datasets as datasets
 import torch
 from torch import nn
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader
 from torchvision import datasets
-from torchvision.transforms import ToTensor, transforms
+from torchvision.transforms import transforms
 import torch.nn.functional as F
 from tqdm import tqdm
-from sklearn.metrics import confusion_matrix, accuracy_score
+from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
-import numpy as np
+
 
 RANDOM_SEED = 42
 BATCH_SIZE = 64
+EPOCHS = 100
 DATASET_PATH = './data'
-TRAIN_SPLIT  = 0.8
 
 torch.manual_seed(RANDOM_SEED)
 
@@ -34,23 +33,10 @@ def data_Module():
         download=True
     )
 
-    test_data = datasets.MNIST(
-        root=DATASET_PATH, 
-        train=False, 
-        transform=tranform, 
-        download=True
-    )
-
-    train_data_size = int( TRAIN_SPLIT * len(train_data.data) )
-    valid_data_size = len(train_data) - train_data_size
-
-    train_data, validation_data = random_split( dataset = train_data, lengths= [train_data_size, valid_data_size])
-
     train_dataloader = DataLoader(train_data, batch_size=64, shuffle=True)
-    valid_dataloader = DataLoader(validation_data, batch_size=64, shuffle=True)
-    test_dataloader = DataLoader(test_data, batch_size=64, shuffle=True)
 
-    return train_dataloader, valid_dataloader, test_dataloader
+
+    return train_dataloader
 
 
 class Generator(nn.Module):
@@ -162,7 +148,7 @@ def plot_generated_images(generator, num_images=16):
 
     generator.train()
 
-def train_loop(dataloader, discriminator, generator, epochs = 100):
+def train_loop(dataloader, discriminator, generator, epochs = EPOCHS):
     discriminator_optimizer = torch.optim.Adam(discriminator.parameters(), lr=0.0002, betas=(0.5, 0.999))
     generator_optimizer = torch.optim.Adam(generator.parameters(), lr=0.0002,betas=(0.5, 0.999))
     middle_epoch = epochs // 2
@@ -198,7 +184,8 @@ def test_loop(discriminator, generator):
         cm = confusion_matrix(targets.cpu().numpy().ravel(),predictions.cpu().numpy().ravel())
 
     return accuracy, cm, fake_images 
-train_dataloader, valid_dataloader, test_dataloader = data_Module()
+
+train_dataloader = data_Module()
 
 gen = Generator()
 dis = Discriminator()
