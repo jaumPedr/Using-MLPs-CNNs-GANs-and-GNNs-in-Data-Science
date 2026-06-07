@@ -19,6 +19,7 @@ torch.manual_seed(RANDOM_SEED)
 
 def data_Module():
     
+    #Image normalization to [-1,1]
     tranform = transforms.Compose(
         [
             transforms.ToTensor(),
@@ -26,6 +27,7 @@ def data_Module():
         ]
     )
 
+    #MNIST training dataset
     train_data = datasets.MNIST(
         root=DATASET_PATH, 
         train=True, 
@@ -38,7 +40,9 @@ def data_Module():
 
     return train_dataloader
 
-
+# Generator Network
+# Input Noise (100) -> Linear -> Reshape ->
+# ConvTranspose1 -> ConvTranspose2 -> Generated Image (28x28)
 class Generator(nn.Module):
     def __init__(self, latent_dim = 100):
         super().__init__()
@@ -58,7 +62,10 @@ class Generator(nn.Module):
         x = torch.tanh(self.convTrans2(x))
 
         return x
-    
+
+# Discriminator Network
+# Input Image -> Conv1 -> Pool1 ->
+# Conv2 -> Pool2 -> Flatten -> Linear -> Real/Fake Score
 class Discriminator(nn.Module):
     def __init__(self):
         super().__init__()
@@ -127,6 +134,7 @@ def loss_Discriminator(discriminator, generator, discriminator_optimizer, image)
     discriminator_optimizer.step()
     return Loss
 
+#Display generated images
 def plot_generated_images(generator, num_images=16):
     generator.eval()
 
@@ -148,6 +156,7 @@ def plot_generated_images(generator, num_images=16):
 
     generator.train()
 
+#GAN training loop
 def train_loop(dataloader, discriminator, generator, epochs = EPOCHS):
     discriminator_optimizer = torch.optim.Adam(discriminator.parameters(), lr=0.0002, betas=(0.5, 0.999))
     generator_optimizer = torch.optim.Adam(generator.parameters(), lr=0.0002,betas=(0.5, 0.999))
@@ -158,13 +167,17 @@ def train_loop(dataloader, discriminator, generator, epochs = EPOCHS):
     for epoch in range(epochs):
         for batch, (X, y) in enumerate(tqdm(dataloader, desc = f"Epoch {epoch+1}/{epochs}")):
             
+            #Update discriminator
             loss_disc = loss_Discriminator(discriminator, generator, discriminator_optimizer, X)
+            
+            #Update generator
             loss_gen = loss_Generator(discriminator, generator, generator_optimizer, X.size(0))
         
+        #Visualize generator progress
         if epoch in [0, middle_epoch, epochs - 1]:
             plot_generated_images(generator)
 
-
+#Evaluate discriminator against generated images
 def test_loop(discriminator, generator):
     discriminator.eval()
     generator.eval()
@@ -185,17 +198,21 @@ def test_loop(discriminator, generator):
 
     return accuracy, cm, fake_images 
 
+#Load dataset
 train_dataloader = data_Module()
 
+#Create GAN models
 gen = Generator()
 dis = Discriminator()
 train_loop(train_dataloader, dis, gen)
 
+#Final evaluation
 accuracy, cm, fake_images = test_loop(dis, gen)
 print(f"Test Accuracy: {accuracy:.4f}")
 print("Confusion Matrix:")
 print(cm)
 
+#Display generated samples
 fig, axes = plt.subplots(4, 4, figsize=(8, 8))
 
 for i, ax in enumerate(axes.flat):
