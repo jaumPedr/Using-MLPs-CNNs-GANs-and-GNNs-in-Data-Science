@@ -16,6 +16,7 @@ The project aims to provide practical experience with the design, training, and 
 The `src/` directory contains independent implementations of each model, allowing experimentation with different learning tasks and datasets.
 
 ---
+
 ## 🎯 Project Objectives
 
 The purpose of this project is to become familiar with:
@@ -48,6 +49,7 @@ Using-MLPs-CNNs-GANs-and-GNNs-in-Data-Science/
 ```
 
 ---
+
 ## 🧩 Implemented Models
 
 ### 🔹 MLP — Multi-Layer Perceptron
@@ -72,6 +74,7 @@ A fully connected neural network applied to the **Breast Cancer Wisconsin Diagno
 - Confusion Matrix
 
 ---
+
 ### 🔹 CNN — Convolutional Neural Network
 
 A convolutional neural network designed for image classification using the **Fashion-MNIST dataset**
@@ -90,6 +93,7 @@ A convolutional neural network designed for image classification using the **Fas
 - Confusion Matrix
 
 ---
+
 ### 🔹 GAN — Generative Adversarial Network
 
 A generative model composed of two competing networks:
@@ -111,6 +115,7 @@ The model is trained using the **MNIST handwritten digits dataset**.
 The training process periodically displays generated samples to visualize the evolution of the generator.
 
 ---
+
 ### 🔹 GNN — Graph Neural Network
 
 A Graph Convolutional Network (GCN) implemented using **PyTorch Geometric**.
@@ -135,6 +140,7 @@ The model is trained on the **Cora Citation Network Dataset**.
 This model demonstrates how neural networks can operate directly on graph-structured data instead of traditional tabular or image datasets.
 
 ---
+
 ## 🛠️ Technologies Used
 
 - Python
@@ -144,6 +150,7 @@ This model demonstrates how neural networks can operate directly on graph-struct
 - Scikit-Learn
 
 ---
+
 ## 🚀 Install the dependencies
 
 ```bash
@@ -151,6 +158,7 @@ pip install -r requirements.txt
 ```
 
 ---
+
 ## 📚 Academic Context
 
 This work was developed as part of the **Data Science** course of the **Computer Science Undergraduate Program at the State University of Ceará (UECE)**.
