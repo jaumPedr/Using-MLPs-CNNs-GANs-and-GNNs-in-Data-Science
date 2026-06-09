@@ -1,0 +1,163 @@
+# 🧠 Using MLPs, CNNs, GANs and GNNs in Data Science
+
+This project implements four distinct neural network architectures widely used in Data Science and Machine Learning:
+
+- **MLP (Multi-Layer Perceptron)**
+- **CNN (Convolutional Neural Network)**
+- **GAN (Generative Adversarial Network)**
+- **GNN (Graph Neural Network)**
+
+The main objective of this project is to explore different deep learning paradigms and understand their applications in structured data, image classification, image generation, and graph-based learning.
+
+This repository was developed as an academic project for the **Data Science** course in the **Computer Science Undergraduate Program at the State University of Ceará (UECE)**.
+
+The project aims to provide practical experience with the design, training, and evaluation of neural network architectures commonly used in modern Artificial Intelligence applications.
+
+The `src/` directory contains independent implementations of each model, allowing experimentation with different learning tasks and datasets.
+
+---
+## 🎯 Project Objectives
+
+The purpose of this project is to become familiar with:
+
+- Fundamentals of Deep Learning
+- Feedforward Neural Networks
+- Convolutional Architectures
+- Generative Models
+- Graph Representation Learning
+- Training, Validation, and Evaluation Procedures
+- Performance Metrics and Confusion Matrices
+
+Each model was developed using a different dataset and learning strategy, highlighting the strengths and use cases of each architecture.
+
+---
+## 📁 Project Structure
+
+```text
+Using-MLPs-CNNs-GANs-and-GNNs-in-Data-Science/
+│
+├── src/
+│   ├── MLP_Model.py
+│   ├── CNN_Model.py
+│   ├── GAN_Model.py
+│   └── GNN_Model.py
+│
+├── requirements.txt
+├── README.md
+└── .gitignore
+```
+
+---
+## 🧩 Implemented Models
+
+### 🔹 MLP — Multi-Layer Perceptron
+
+A fully connected neural network applied to the **Breast Cancer Wisconsin Diagnostic Dataset**.
+
+**Task:** Binary Classification
+
+**Concepts Explored:**
+- Dense (Fully Connected) Layers
+- Non-linear Activation Functions
+- Backpropagation
+- Binary Classification
+- Feature Standardization
+- Performance Evaluation Metrics
+
+**Metrics Evaluated:**
+- Accuracy
+- Precision
+- Recall
+- F1-Score
+- Confusion Matrix
+
+---
+### 🔹 CNN — Convolutional Neural Network
+
+A convolutional neural network designed for image classification using the **Fashion-MNIST dataset**
+
+**Task:** Multi-Class Image Classification
+
+**Concepts Explored:**
+- Convolution Layers
+- Pooling Layers
+- Feature Extraction
+- Fully Connected Classification 
+- Image Representation Learning
+
+**Metrics Evaluated:**
+- Accuracy
+- Confusion Matrix
+
+---
+### 🔹 GAN — Generative Adversarial Network
+
+A generative model composed of two competing networks:
+
+- Generator
+- Discriminator
+
+The model is trained using the **MNIST handwritten digits dataset**.
+
+**Task:** Image Generation
+
+**Concepts Explored:**
+- Generative Modeling
+- Adversarial Training
+- Image Synthesis
+- Generator and Discriminator Optimization
+- Unsupervised Learning
+
+The training process periodically displays generated samples to visualize the evolution of the generator.
+
+---
+### 🔹 GNN — Graph Neural Network
+
+A Graph Convolutional Network (GCN) implemented using **PyTorch Geometric**.
+
+The model is trained on the **Cora Citation Network Dataset**.
+
+**Task:** Node Classification
+
+**Concepts Explored:**
+- Graph Convolutional Networks
+- Node Embeddings
+- Graph Representation Learning
+- Graph-Structured Data Processing
+
+**Metrics Evaluated:**
+- Accuracy
+- Precision
+- Recall
+- F1-Score
+- Confusion Matrix
+
+This model demonstrates how neural networks can operate directly on graph-structured data instead of traditional tabular or image datasets.
+
+---
+## 🛠️ Technologies Used
+
+- Python
+- PyTorch
+- Torchvision
+- PyTorch Geometric
+- Scikit-Learn
+
+---
+## 🚀 Install the dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+## 📚 Academic Context
+
+This work was developed as part of the **Data Science** course of the **Computer Science Undergraduate Program at the State University of Ceará (UECE)**.
+
+The project serves as a practical introduction to different neural network architectures and their applications across multiple domains of Machine Learning, including:
+
+- Tabular Data Classification
+- Computer Vision
+- Generative Artificial Intelligence
+- Graph Learning
